@@ -1,6 +1,8 @@
 <?
 
+// Include the core dependencies for each of the question types.
 include_once($CFG->dirroot . '/question/engine/renderer.php');
+include_once($CFG->dirroot . '/question/type/rendererbase.php');
 
 /**
  * Special override for producing PDFs of question objects.

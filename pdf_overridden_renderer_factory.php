@@ -1,5 +1,6 @@
 <?php
 
+
 class pdf_overridden_renderer_factory extends theme_overridden_renderer_factory
 {
     /**
