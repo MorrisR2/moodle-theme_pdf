@@ -44,7 +44,7 @@ class core_pdf_renderer extends core_renderer
 
      * Can be overridden to create renderers with non-default options.
      */
-    protected function create_new_pdf_writer($orientation=self::ORIENTATION_PORTRAIT, $paper_size=self::PAPER_LETTER, $language=self::LANGUAGE_ENGLISH)
+    protected static function create_new_pdf_writer($orientation=self::ORIENTATION_PORTRAIT, $paper_size=self::PAPER_LETTER, $language=self::LANGUAGE_ENGLISH)
     {
         //create a new HTML2PDF object
         $pdf =  new HTML2PDF($orientation, $paper_size, $language, false, 'ISO-8859-1'); //true, 'UTF-8');
@@ -88,7 +88,7 @@ class core_pdf_renderer extends core_renderer
         else
         {  
             //if we're instructed to, turn off contenttype
-            if(optional_param('set_contenttype', 1, PARAM_INT))  
+            if(optional_param('set_contenttype', 1, PARAM_INT) && !headers_sent())  
                 header('Content-Type: application/pdf');
 
             //and display the PDF's content
@@ -325,8 +325,101 @@ class core_pdf_renderer extends core_renderer
 
         //retrieve the raw PDF data
         if($return_output)
-            return $pdf->Output('', true);
+            return $pdf->Output('', 'S');
         else
             $pdf->Output($name, false);
+    }
+
+     /**
+     * Do not call this function directly.
+     *
+     * To terminate the current script with a fatal error, call the {@link print_error}
+     * function, or throw an exception. Doing either of those things will then call this
+     * function to display the error, before terminating the execution.
+     *
+     * @param string $message The message to output
+     * @param string $moreinfourl URL where more info can be found about the error
+     * @param string $link Link for the Continue button
+     * @param array $backtrace The execution backtrace
+     * @param string $debuginfo Debugging information
+     * @return string the HTML to output.
+     */
+    public function fatal_error($message, $moreinfourl, $link, $backtrace, $debuginfo = null) {
+        global $CFG;
+
+        $output = '';
+        $obbuffer = '';
+
+        // Turn off output buffering.
+        ob_end_clean();
+
+        if ($this->has_started()) {
+            // we can not always recover properly here, we have problems with output buffering,
+            // html tables, etc.
+            $output .= $this->opencontainers->pop_all_but_last();
+
+        } else {
+            // It is really bad if library code throws exception when output buffering is on,
+            // because the buffered text would be printed before our start of page.
+            // NOTE: this hack might be behave unexpectedly in case output buffering is enabled in PHP.ini
+            error_reporting(0); // disable notices from gzip compression, etc.
+            while (ob_get_level() > 0) {
+                $buff = ob_get_clean();
+                if ($buff === false) {
+                    break;
+                }
+                $obbuffer .= $buff;
+            }
+            error_reporting($CFG->debug);
+
+            // Header not yet printed
+            if (isset($_SERVER['SERVER_PROTOCOL'])) {
+                // server protocol should be always present, because this render
+                // can not be used from command line or when outputting custom XML
+                @header($_SERVER['SERVER_PROTOCOL'] . ' 404 Not Found');
+            }
+            $this->page->set_context(null); // ugly hack - make sure page context is set to something, we do not want bogus warnings here
+            $this->page->set_url('/'); // no url
+            //$this->page->set_pagelayout('base'); //TODO: MDL-20676 blocks on error pages are weird, unfortunately it somehow detect the pagelayout from URL :-(
+            $this->page->set_title(get_string('error'));
+            $this->page->set_heading($this->page->course->fullname);
+            $output .= $this->header();
+        }
+
+        $message = '<p class="errormessage">' . $message . '</p>'.
+                '<p class="errorcode"><a href="' . $moreinfourl . '">' .
+                get_string('moreinformation') . '</a></p>';
+        if (empty($CFG->rolesactive)) {
+            $message .= '<p class="errormessage">' . get_string('installproblem', 'error') . '</p>';
+            //It is usually not possible to recover from errors triggered during installation, you may need to create a new database or use a different database prefix for new installation.
+        }
+        $output .= $this->box($message, 'errorbox');
+
+        if (debugging('', DEBUG_DEVELOPER)) {
+            if (!empty($debuginfo)) {
+                $debuginfo = s($debuginfo); // removes all nasty JS
+                $debuginfo = str_replace("\n", '<br />', $debuginfo); // keep newlines
+                $output .= $this->notification('<strong>Debug info:</strong> '.$debuginfo, 'notifytiny');
+            }
+            if (!empty($backtrace)) {
+                $output .= $this->notification('<strong>Stack trace:</strong> '.format_backtrace($backtrace), 'notifytiny');
+            }
+            if ($obbuffer !== '' ) {
+                $output .= $this->notification('<strong>Output buffer:</strong> '.s($obbuffer), 'notifytiny');
+            }
+        }
+
+        if (empty($CFG->rolesactive)) {
+            // continue does not make much sense if moodle is not installed yet because error is most probably not recoverable
+        } else if (!empty($link)) {
+            $output .= $this->continue_button($link);
+        }
+
+        //$output .= $this->footer();
+
+        // Padding to encourage IE to display our error page, rather than its own.
+        $output .= str_repeat(' ', 512);
+
+        return $output;
     }
 }
