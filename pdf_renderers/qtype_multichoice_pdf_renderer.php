@@ -38,11 +38,11 @@ abstract class qtype_multichoice_pdf_renderer_base extends qtype_multichoice_ren
         $col_width = floor(self::QUESTION_MAXIMUM_WIDTH / $cols) - 2;
 
         //start the table
-        $output .= "\n".html_writer::start_tag('table', array('class' => 'fullwidth', 'style' => 'width: 95%;'));
+        $output .= "\n".html_writer::start_tag('table', array('class' => 'fullwidth', 'style' => 'width: 100%;'));
 
         //output the question
         $output .= "\n".html_writer::start_tag('tr');
-        $output .= "\n".html_writer::tag('td', $question_text, array('colspan' => $cols * 2, 'width' => '95%'));
+        $output .= "\n".html_writer::tag('td', $question_text, array('colspan' => $cols * 2, 'width' => '100%'));
         $output .= "\n".html_writer::end_tag('tr');
 
 

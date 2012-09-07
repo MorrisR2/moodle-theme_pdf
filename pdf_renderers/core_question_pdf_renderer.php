@@ -27,17 +27,17 @@ class core_question_pdf_renderer extends core_question_renderer
      */
     public function question(question_attempt $qa, qbehaviour_renderer $behaviouroutput, qtype_renderer $qtoutput, question_display_options $options, $number) 
     {
+        //Note: These styles _must_ be inline, for compatibility with HTML2PDF.
 
         //start a new output buffer
         $output = '';
 
         //add the quesiton number (TODO: style?)
         //$output .= '<strong>' . $number .'.</strong>&nbsp; &nbsp;';
-
-        $output .= html_writer::start_tag('table', array('style' => 'width: 100%; padding-bottom: 4px;'));
+        $output .= html_writer::start_tag('table', array('style' => 'width: 100%; padding-bottom: 4px;', 'class' => 'question'));
         $output .= html_writer::start_tag('tr', array());
-        $output .= html_writer::tag('td', $number.'.', array('valign' => 'top', 'width' => '10%', 'style' => 'padding-right: 10px;'));
-        $output .= html_writer::start_tag('td', array('width' => '90%'));
+        $output .= html_writer::tag('td', $number.'.', array('valign' => 'top', 'width' => '3%', 'style' => 'padding-right: 10px;'));
+        $output .= html_writer::start_tag('td', array('width' => '97%'));
 
         //get the question from the attempt object
         $question = $qa->get_question();

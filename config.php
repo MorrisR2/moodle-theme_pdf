@@ -37,11 +37,7 @@ $THEME->name = 'pdf';
 // the directory in which this file resides.
 ////////////////////////////////////////////////////
 
-
-$THEME->parents = array(
-    'standard',
-    'base',
-);
+$THEME->parents = array();
 
 /////////////////////////////////////////////////////
 // Which existing theme(s) in the /theme/ directory
@@ -87,85 +83,53 @@ $THEME->editor_sheets = array('');
 // body of the editor.
 ////////////////////////////////////////////////////
 
-//$THEME->layouts = array(
-//    'base' => array(
-//        'file' => 'general.php',
-//        'regions' => array('side-pre', 'side-post'),
-//        'defaultregion' => 'side-post',
-//    ),
-//    'standard' => array(
-//        'file' => 'general.php',
-//        'regions' => array('side-pre', 'side-post'),
-//        'defaultregion' => 'side-post',
-//    ),
-//    'course' => array(
-//        'file' => 'general.php',
-//        'regions' => array('side-pre', 'side-post'),
-//        'defaultregion' => 'side-post'
-//    ),
-//    'coursecategory' => array(
-//        'file' => 'general.php',
-//        'regions' => array('side-pre', 'side-post'),
-//        'defaultregion' => 'side-post',
-//    ),
-//    'incourse' => array(
-//        'file' => 'general.php',
-//        'regions' => array('side-pre', 'side-post'),
-//        'defaultregion' => 'side-post',
-//    ),
-//    'frontpage' => array(
-//        'file' => 'frontpage.php',
-//        'regions' => array('side-pre', 'side-post'),
-//        'defaultregion' => 'side-post',
-//    ),
-//    'admin' => array(
-//        'file' => 'general.php',
-//        'regions' => array('side-pre'),
-//        'defaultregion' => 'side-pre',
-//    ),
-//    'mydashboard' => array(
-//        'file' => 'general.php',
-//        'regions' => array('side-pre', 'side-post'),
-//        'defaultregion' => 'side-post',
-//        'options' => array('langmenu'=>true),
-//    ),
-//    'mypublic' => array(
-//        'file' => 'general.php',
-//        'regions' => array('side-pre', 'side-post'),
-//        'defaultregion' => 'side-post',
-//    ),
-//    'login' => array(
-//        'file' => 'general.php',
-//        'regions' => array(),
-//        'options' => array('langmenu'=>true),
-//    ),
-//    'popup' => array(
-//        'file' => 'general.php',
-//        'regions' => array(),
-//        'options' => array('nofooter'=>true, 'noblocks'=>true, 'nonavbar'=>true),
-//    ),
-//    'frametop' => array(
-//        'file' => 'general.php',
-//        'regions' => array(),
-//        'options' => array('nofooter'=>true),
-//    ),
-//    'maintenance' => array(
-//        'file' => 'general.php',
-//        'regions' => array(),
-//        'options' => array('nofooter'=>true, 'nonavbar'=>true),
-//    ),
-//    'embedded' => array(
-//        'theme' => 'canvas',
-//        'file' => 'embedded.php',
-//        'regions' => array(),
-//        'options' => array('nofooter'=>true, 'nonavbar'=>true),
-//    ),
-//    'report' => array(
-//        'file' => 'general.php',
-//        'regions' => array('side-pre'),
-//        'defaultregion' => 'side-pre',
-//    ),
-//);
+$THEME->layouts = array(
+   'base' => array(
+       'file' => 'general.php',
+   ),
+   'standard' => array(
+       'file' => 'general.php',
+   ),
+   'course' => array(
+       'file' => 'general.php',
+   ),
+   'coursecategory' => array(
+       'file' => 'general.php',
+   ),
+   'incourse' => array(
+       'file' => 'general.php',
+   ),
+   'frontpage' => array(
+       'file' => 'frontpage.php',
+   ),
+   'admin' => array(
+       'file' => 'general.php',
+   ),
+   'mydashboard' => array(
+       'file' => 'general.php',
+   ),
+   'mypublic' => array(
+       'file' => 'general.php',
+   ),
+   'login' => array(
+       'file' => 'general.php',
+   ),
+   'popup' => array(
+       'file' => 'general.php',
+   ),
+   'frametop' => array(
+       'file' => 'general.php',
+   ),
+   'maintenance' => array(
+       'file' => 'general.php',
+   ),
+   'embedded' => array(
+       'file' => 'embedded.php',
+   ),
+   'report' => array(
+       'file' => 'general.php',
+   )
+);
 
 ///////////////////////////////////////////////////////////////
 // These are all of the possible layouts in Moodle. The

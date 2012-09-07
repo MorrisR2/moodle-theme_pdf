@@ -1,102 +1,125 @@
 <?php
 
-require_once($CFG->dirroot . '/theme/pdf/html2pdf/html2pdf.class.php');
-include_once($CFG->dirroot . '/lib/htmlpurifier/HTMLPurifier.safe-includes.php');
+//require_once($CFG->dirroot . '/theme/pdf/html2pdf/html2pdf.class.php');
+//include_once($CFG->dirroot . '/lib/htmlpurifier/HTMLPurifier.safe-includes.php');
+require_once($CFG->dirroot . '/theme/pdf/lib/webkit_pdf.class.php');
 
+/**
+ * Virtual "enumeration" which specifies the possible values for a PDF's paper size.
+ * @copyright 2011, 2012 Binghamton University
+ * @author Kyle Temkin <ktemkin@binghamton.edu> 
+ * @license GNU Public License, {@link http://www.gnu.org/copyleft/gpl.html}
+ */
+class core_pdf_renderer_paper_size {
+    const LETTER = 'Letter';
+	const LEGAL = 'Legal';
+	const A3 = 'A3';
+	const A4 = 'A4';
+	const A5 = 'A5';
+}
+
+/**
+ * Virtual "enumeration" which specifies the possible values for a PDF's orientation.
+ * @copyright 2011, 2012 Binghamton University
+ * @author Kyle Temkin <ktemkin@binghamton.edu> 
+ * @license GNU Public License, {@link http://www.gnu.org/copyleft/gpl.html}
+ */
+class core_pdf_renderer_orientation {
+    const PORTRAIT = 'Portrait';
+    const LANDSCAPE = 'Landscape';
+}
 
 /**
  * An extension of the core renderer, which uses the HTML2PDF library to produce PDFs instead of HTML.
  */
 class core_pdf_renderer extends core_renderer
 {
-    const PAPER_LETTER = 'Letter';
-	const PAPER_LEGAL = 'Legal';
-	const PAPER_A3 = 'A3';
-	const PAPER_A4 = 'A4';
-	const PAPER_A5 = 'A5';
-
-	const UNITS_ENGLISH = 'in';
-	const UNITS_IMPERIAL = 'in';
-	const UNITS_METRIC = 'mm';
-	const UNITS_METRIC_CM = 'cm';
-	const UNITS_POINT = 'pt';
-
-    const ORIENTATION_PORTRAIT = 'P';
-    const ORIENTATION_LANDSCAPE = 'L';
-
-	//TODO: add more language codes
-	const LANGUAGE_ENGLISH = 'en';
-	const LANGUAGE_DEUTSCH = 'de';
 
     /**
-     * If set to true, the output will not be purified with HTML purifier
+     * If set to true, any PDFs produced by any renderer will not be purified.
      */
-    public static $do_not_purify = false;
+    public static $do_not_purify = true;
 
     /**
-     * A local copy of the PDF renderer.
+     * A local copy of the PDF creator.
      */
     private $pdf;
 
    
     /**
-     * Creates a new HTML2PDF object. 
-
-     * Can be overridden to create renderers with non-default options.
+     * Creates a new HTML2PDF or WebKit-based PDF creator.
+     *
+     * @param string $orientation Specifies the orientation of the pages in the PDF. Selected from the constants within 'core_pdf_renderer_orientation'.  
+     * @param string $paper_size  Specifies the size of the pages within the PDF. Selected from the constants with 'core_pdf_renderer_paper_size'.
+     * @param string $language    Deprecated; the language with which this PDF will be tagged. 
+     * @return webkit_pdf         A WebKit PDF creator.
      */
-    protected static function create_new_pdf_writer($orientation=self::ORIENTATION_PORTRAIT, $paper_size=self::PAPER_LETTER, $language=self::LANGUAGE_ENGLISH)
-    {
-        //create a new HTML2PDF object
-        $pdf =  new HTML2PDF($orientation, $paper_size, $language, false, 'ISO-8859-1'); //true, 'UTF-8');
-        //$pdf =  new HTML2PDF($orientation, $paper_size, $language, true, 'UTF-8');
+    protected static function create_new_pdf_writer($orientation=core_pdf_renderer_orientation::PORTRAIT, $paper_size=core_pdf_renderer_paper_size::LETTER, $language='') {
 
-        //set the font
-        $pdf->setDefaultFont('Times');
+        // Create a new interface to the WebKit PDF renderer.
+        // TODO: determine if HTML2PDF should be created given a configuration flag?
+        $pdf = new webkit_pdf();
 
+        // Set up the PDF's page layout.
+        $pdf->set_orientation($orientation);
+        $pdf->set_page_size($paper_size);
+
+        // Return the newly created PDF creator.
         return $pdf;
     }
 
 
      
-    public function header()
-    {
+    /**
+     * Creates the page's header, and begins redirecting all output to a PDF.
+     */
+    public function header() {
+
         global $PAGE, $CFG;
 
-        //start outut buffering, which we'll use to build the content for our PDF
+        // Start outut buffering, which we'll use to build the content for our PDF
         ob_start();
 
+        // EXPERIMENTAL: Call the main renderer.
+        return parent::header();
     }
 
-    public function footer()
-    {
+    /**
+     * Adds the page's footer, and send the completed PDF.
+     */
+    public function footer() {
+
         global $CFG;
 
-        //note the lack of the HTML, HEAD, and BODY tags- HTML2PDF doesn't support the latter, and runs better without the former
+        //Add the parent's footer.
+        parent::footer();
 
         //terminate output buffering, and retrieve the entire contents of the page to be rendered
         $html = ob_get_clean();
-        
-        
+
         //debug flag; forces the renderer to skip PDF mode
         $no_pdf = optional_param('do_not_render', 0, PARAM_INT);
 
         //if we have the debug "do not render" flag, send the raw HTML
-        if($no_pdf)
+        if($no_pdf) 
         {
-            echo self::pdf_preprocess($html, false);
+            return self::pdf_preprocess($html, false);
         }
         else
         {  
             //if we're instructed to, turn off contenttype
-            if(optional_param('set_contenttype', 1, PARAM_INT) && !headers_sent())  
-                header('Content-Type: application/pdf');
-
+            //if(optional_param('set_contenttype', 1, PARAM_INT) && !headers_sent()) 
+            //echo $test; 
+            //    header('Content-Type: application/pdf');
             //and display the PDF's content
-            self::output_pdf($html, false, 'printable.pdf');
+            
+            // Render the PDF's content, and return it.
+            // TODO: Figure out a good way to determine the file-name from the page content?
+            return self::output_pdf($html, true, 'printable.pdf');
         }
-
     }
 
+    /*
     public static function generate_pdf_header()
     {
         global $CFG;
@@ -104,6 +127,7 @@ class core_pdf_renderer extends core_renderer
         //inline the core PDF CSS 
         return html_writer::tag('style', file_get_contents($CFG->dirroot.'/theme/pdf/style/core.css'), array('type' => 'text/css'));
     }
+    */
 
     public static function pdf_preprocess($html, $rewrite_links=true)
     {
@@ -313,21 +337,22 @@ class core_pdf_renderer extends core_renderer
         //create a new PDF writer object
         $pdf = self::create_new_pdf_writer();
 
-        if(optional_param('pdfdebug', 0, PARAM_INT))
-            $pdf->setModeDebug();
-
         //if add_header is set, add the PDF's header
-        if($add_header)
-            $html = self::generate_pdf_header() . $html;
+        //if($add_header)
+        //    $html = self::generate_pdf_header() . $html;
 
         //pass the page's HTML to our PDF writer
-        $pdf->writeHTML(self::pdf_preprocess($html));
+        //$pdf->writeHTML(self::pdf_preprocess($html));
+        $pdf->set_html(self::pdf_preprocess($html));
+
+        // Run the internal rendering process.
+        $pdf->render();
 
         //retrieve the raw PDF data
         if($return_output)
-            return $pdf->Output('', 'S');
+            return $pdf->output('S', $name);
         else
-            $pdf->Output($name, false);
+            $pdf->output('D', $name);
     }
 
      /**

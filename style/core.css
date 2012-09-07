@@ -1,5 +1,15 @@
+body {
+    margin: 0cm;
+    padding: 0cm;
+}
+
 
 p, td, li
 {
-    font-size: 11pt;
+    font-size: 10pt;
+    font-family: "Times New Roman", Times, serif;
+}
+
+table {
+    page-break-inside: avoid;
 }
