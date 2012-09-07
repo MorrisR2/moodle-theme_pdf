@@ -166,7 +166,6 @@ class core_pdf_renderer extends core_renderer
         //attempt to replace each pluginfile link with a 
         $after = preg_replace_callback('#img(.*?) src\="'.$root_url.'/pluginfile\.php/([0-9]+)/([a-z]+)/([a-z]+)/([0-9]+)/([0-9]+)/([0-9]+)/([^"]+)#', array('core_pdf_renderer', 'rewrite_link_callback'), $html, -1);
 
-
         //if no error occurred, return the HTML string, with links replaced
         if($after)
             return $after;

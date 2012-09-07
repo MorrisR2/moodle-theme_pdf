@@ -204,6 +204,8 @@ abstract class qtype_multichoice_pdf_renderer_base extends qtype_multichoice_ren
         if(is_array($line))
             $line = $line[0];
 
+        /*
+
         //handle the most common HTML elements- paragraphs, tables
         $to_handle = 
             array
@@ -219,6 +221,8 @@ abstract class qtype_multichoice_pdf_renderer_base extends qtype_multichoice_ren
                 //apply break_into_lines to each match
                 return array_merge($existing, array_map(array(__CLASS__, 'break_into_lines'), $matches));
             }
+
+        */
 
         //base case- neither of our expressions matched, so split our line by its linebreaks and return
         $array =  preg_split('%<br[^>]*>%i', $line);

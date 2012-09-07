@@ -47,7 +47,8 @@
             private $copies=1;
             private $grayscale=false;
             private $title='';
-            private static $cpu='';
+            private $footer='';
+            private $header='';
             /**
              * Advanced execution routine.
              * @param string $cmd The command to execute.
@@ -196,6 +197,19 @@
                     $this->html=$html;
                     file_put_contents($this->tmp,$html);
             }
+
+            public function set_header($html) {
+                //TODO: abstract to config
+                $this->header = self::tempnam_with_extension('/tmp', 'html', 'header');
+                file_put_contents($this->header, $html);
+            }
+
+            public function set_footer($html) {
+                //TODO: abstract to config
+                $this->footer = self::tempnam_with_extension('/tmp', 'html', 'footer');
+                file_put_contents($this->header, $html);
+            }
+
             /**
              * Returns WKPDF print status.
              * @return string WPDF print status.
@@ -214,6 +228,8 @@
                             .(($this->copies>1)?' --copies '.$this->copies:'')                              // number of copies
                             .' --orientation '.$this->orient                                                                // orientation
                             .' --page-size '.$this->size                                                                    // page size
+                            .($this->footer ?  ' --footer-html '.$this->footer : '')
+                            .($this->header ?  ' --header-html '.$this->header : '')
                             .($this->toc?' --toc':'')                                                                               // table of contents
                             .($this->grayscale?' --grayscale':'')                                                   // grayscale
                             .(($this->title!='')?' --title "'.$this->title.'"':'')                  // title
@@ -239,7 +255,17 @@
 
                     $this->status=$this->pdf['stderr'];
                     $this->pdf=$this->pdf['stdout'];
+
+
                     unlink($this->tmp);
+
+                    if($this->header) {
+                        unlink($this->header);
+                    }
+
+                    if($this->footer) {
+                        unlink($this->footer);
+                    }
             }
             /**
              * Return PDF with various options.
@@ -284,7 +310,7 @@
              * Sends the proper HTTP headers to initialize a forced download.
              * (This prevents browsers from embedding the PDF in the page.)
              */
-            public static function send_download_headers($file_length = null, $file_name = 'printable.php') {
+            public static function send_download_headers($file_length = null, $file_name = 'printable.pdf') {
                 header('Content-Description: File Transfer');
                 header('Cache-Control: public, must-revalidate, max-age=0'); // HTTP/1.1
                 header('Pragma: public');
@@ -310,7 +336,7 @@
              * Sends the proper HTTP headers to inform the browser that this is a PDF.
              * In most cases, the file will be embedded.
              */
-            public static function send_embed_headers($file_length = null, $file_name ='printable.php') {
+            public static function send_embed_headers($file_length = null, $file_name ='printable.pdf') {
                 header('Content-Type: application/pdf');
                 header('Cache-Control: public, must-revalidate, max-age=0'); // HTTP/1.1
                 header('Pragma: public');
