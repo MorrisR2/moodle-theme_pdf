@@ -43,7 +43,12 @@ class core_pdf_renderer extends core_renderer
     /**
      * A local copy of the PDF creator.
      */
-    private $pdf;
+    private $pdf; //TODO: remove?
+
+
+    // Header and footer HTML for the PDF; if desired. 
+    public $header = '';
+    public $footer = '';
 
    
     /**
@@ -115,7 +120,7 @@ class core_pdf_renderer extends core_renderer
             
             // Render the PDF's content, and return it.
             // TODO: Figure out a good way to determine the file-name from the page content?
-            return self::output_pdf($html, true, 'printable.pdf');
+            return self::output_pdf($html, true, 'printable.pdf', $this->header, $this->footer);
         }
     }
 
@@ -330,7 +335,7 @@ class core_pdf_renderer extends core_renderer
     /**
      * Converts the HTML contents of a Moodle page to a PDF.
      */
-    public static function output_pdf($html, $return_output = true, $name='printable.pdf', $add_header=true)
+    public static function output_pdf($html, $return_output = true, $name='printable.pdf', $header = '', $footer = '')
     {
         //TODO: options?
         //create a new PDF writer object
@@ -343,6 +348,16 @@ class core_pdf_renderer extends core_renderer
         //pass the page's HTML to our PDF writer
         //$pdf->writeHTML(self::pdf_preprocess($html));
         $pdf->set_html(self::pdf_preprocess($html));
+
+        //If a header was provided, pass it to the PDF.
+        if(!empty($header)) {
+            $pdf->set_header($header);
+        }
+
+        //If a footer was provided, pass it to the PDF.
+        if(!empty($footer)) {
+            $pdf->set_footer($footer);
+        }
 
         // Run the internal rendering process.
         $pdf->render();

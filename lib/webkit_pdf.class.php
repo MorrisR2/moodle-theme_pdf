@@ -207,7 +207,7 @@
             public function set_footer($html) {
                 //TODO: abstract to config
                 $this->footer = self::tempnam_with_extension('/tmp', 'html', 'footer');
-                file_put_contents($this->header, $html);
+                file_put_contents($this->footer, $html);
             }
 
             /**
@@ -228,8 +228,11 @@
                             .(($this->copies>1)?' --copies '.$this->copies:'')                              // number of copies
                             .' --orientation '.$this->orient                                                                // orientation
                             .' --page-size '.$this->size                                                                    // page size
-                            .($this->footer ?  ' --footer-html '.$this->footer : '')
-                            .($this->header ?  ' --header-html '.$this->header : '')
+                            .' -T 15mm -B 10mm -R 4mm -L 4mm '
+                            .' --debug-javascript '
+                            //.($this->footer ?  ' --footer-spacing 3 --footer-html '.$this->footer : '')
+                            .' --footer-center [page] '
+                            .($this->header ?  ' --header-spacing 3 --header-html '.$this->header : '')
                             .($this->toc?' --toc':'')                                                                               // table of contents
                             .($this->grayscale?' --grayscale':'')                                                   // grayscale
                             .(($this->title!='')?' --title "'.$this->title.'"':'')                  // title

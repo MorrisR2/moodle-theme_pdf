@@ -1,10 +1,8 @@
 body {
-    margin: 0mm 0mm 0mm 0mm;
-    padding: 0mm 0mm 0mm 0mm;
 }
 
 
-p, td, li
+p, td, li, div, span
 {
     font-size: 11pt;
     font-family: "Times New Roman", Times, serif;
@@ -14,19 +12,14 @@ table {
     page-break-inside: avoid;
 }
 
-/* @media print { */
-    @page { counter-increment: page; }
 
     #pageHeader {
-        position: fixed;
-        top: 0;
-        text-align: center;
+        margin-bottom: 10mm;
+        font-size: 11pt;
+        font-family: "Times New Roman", Times, serif;
     }
 
     #pageFooter {
-        position: fixed;
-        bottom: 0;
-        text-align: center;
     }
 
     #pageNumber {

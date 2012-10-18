@@ -10,8 +10,8 @@
             'type' => 'text/css'
         ));
     ?>
-</head>
-<body id="<?php echo $PAGE->bodyid ?>" class="<?php echo $PAGE->bodyclasses ?>">
+    </head>
+<body id="<?php echo $PAGE->bodyid ?>" class="<?php echo $PAGE->bodyclasses ?>" >
     <?php echo core_renderer::MAIN_CONTENT_TOKEN ?>
 </body>
 <html>
