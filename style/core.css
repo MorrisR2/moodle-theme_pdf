@@ -1,8 +1,8 @@
 body {
 }
 
-
 p, td, li, div, span
+/* p, td, li */
 {
     font-size: 11pt;
     font-family: "Times New Roman", Times, serif;
@@ -27,3 +27,39 @@ table {
     }
 /*
 } */
+
+.endpage {
+    /* page-break-after: always; */
+}
+
+
+.newpage {
+    page-break-before: always;
+}
+
+div.qwithidentifier {
+    padding-bottom: 2mm;
+    min-height: 130px !important;
+    page-break-after: always;
+}
+
+div.questionid {
+    float: right;
+    height: 130px;
+    margin-top: -10px;
+}
+
+div.questionid img {
+    width: 116px !important;
+    height: 116px !important;
+    padding-botom: 10px;
+}
+
+.qwithidentifier table.question {
+    padding-top: 1mm !important;
+    width: auto !important;
+}
+
+.question {
+    page-break-inside: avoid !important;
+}

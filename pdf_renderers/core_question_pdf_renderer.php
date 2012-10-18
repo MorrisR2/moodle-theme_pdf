@@ -32,16 +32,26 @@ class core_question_pdf_renderer extends core_question_renderer
         //start a new output buffer
         $output = '';
 
-        //add the quesiton number (TODO: style?)
-        //$output .= '<strong>' . $number .'.</strong>&nbsp; &nbsp;';
-        $output .= html_writer::start_tag('table', array('style' => 'width: 100%; padding-bottom: 4px;', 'class' => 'question'));
-        $output .= html_writer::start_tag('tr', array());
-        $output .= html_writer::tag('td', $number.'.', array('valign' => 'top', 'width' => '3%', 'style' => 'padding-right: 10px;'));
-        $output .= html_writer::start_tag('td', array('width' => '97%'));
-
         //get the question from the attempt object
         $question = $qa->get_question();
         $pragmas = self::extract_pragmas($question->format_questiontext($qa));
+
+        $extra_classes = '';
+
+        if(!empty($pragmas['page_break_before'])) {
+            $extra_classes .= ' startpage';
+        }
+
+        //if(!empty($pragmas['page_break_after'])) {
+            $extra_classes .= ' endpage';
+        //}
+
+        //add the quesiton number (TODO: style?)
+        //$output .= '<strong>' . $number .'.</strong>&nbsp; &nbsp;';
+        $output .= html_writer::start_tag('table', array('style' => 'width: 100%; padding-bottom: 4px;', 'class' => 'question'.$extra_classes));
+        $output .= html_writer::start_tag('tr', array());
+        $output .= html_writer::tag('td', $number.'.', array('valign' => 'top', 'width' => '3%', 'style' => 'padding-right: 10px;'));
+        $output .= html_writer::start_tag('td', array('width' => '97%', 'class' => 'qcontent'));
 
         //add the question's formulation
         $output .= $this->formulation($qa, $behaviouroutput, $qtoutput, $options);

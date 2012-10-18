@@ -335,9 +335,11 @@ class core_pdf_renderer extends core_renderer
     /**
      * Converts the HTML contents of a Moodle page to a PDF.
      */
-    public static function output_pdf($html, $return_output = true, $name='printable.pdf', $header = '', $footer = '')
-    {
+    public static function output_pdf($html, $return_output = true, $name='printable.pdf', $header = '', $footer = '') {
+//    public static function output_pdf($html, $return_output = true, $name='printable.pdf', $add_header=true) {
+
         //TODO: options?
+        //
         //create a new PDF writer object
         $pdf = self::create_new_pdf_writer();
 
