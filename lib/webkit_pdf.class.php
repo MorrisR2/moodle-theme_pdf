@@ -56,7 +56,8 @@
              * @return array An array of execution data; stdout, stderr and return "error" code.
              */
             private static function _pipeExec($cmd,$input=''){
-                    $proc=proc_open($cmd,array(0=>array('pipe','r'),1=>array('pipe','w'),2=>array('pipe','w')),$pipes);
+                    // array('bypass_shell' => 1)
+                    $proc=proc_open($cmd,array(0=>array('pipe','r'),1=>array('pipe','w'),2=>array('pipe','w')),$pipes, null);
                     fwrite($pipes[0],$input);
                     fclose($pipes[0]);
                     $stdout=stream_get_contents($pipes[1]);
@@ -130,7 +131,7 @@
             public function __construct(){
 
                 //TODO: abstract this to a configuration file
-                $this->cmd='/usr/bin/wkhtmltopdf';
+                $this->cmd=$GLOBALS['WKPDF_BASE_PATH'] . 'wkhtml64.exe';
 
                 // If we couldn't find the wkhtmltopdf binary, raise an exception.
                 if(!file_exists($this->cmd)) {
@@ -139,7 +140,7 @@
 
                 // Create a temporary file to store the raw HTML.
                 // TODO: replace with Moodle's temp path.
-                $this->tmp = self::tempnam_with_extension('/tmp', 'html', 'pdf');
+                $this->tmp = self::tempnam_with_extension($GLOBALS['WKPDF_BASE_PATH'] . 'tmp', 'html', 'pdf');
             }
             /**
              * Set orientation, use constants from this class.
@@ -200,13 +201,13 @@
 
             public function set_header($html) {
                 //TODO: abstract to config
-                $this->header = self::tempnam_with_extension('/tmp', 'html', 'header');
+                $this->header = self::tempnam_with_extension($GLOBALS['WKPDF_BASE_PATH'] . 'tmp', 'html', 'header');
                 file_put_contents($this->header, $html);
             }
 
             public function set_footer($html) {
                 //TODO: abstract to config
-                $this->footer = self::tempnam_with_extension('/tmp', 'html', 'footer');
+                $this->footer = self::tempnam_with_extension($GLOBALS['WKPDF_BASE_PATH'] . 'tmp', 'html', 'footer');
                 file_put_contents($this->footer, $html);
             }
 
@@ -223,21 +224,49 @@
              */
             public function render(){
 
-                    $this->pdf=self::_pipeExec(
-                            '"'.$this->cmd.'"'
+/*
+echo
+                            '\'"'.$this->cmd.'"'
                             .(($this->copies>1)?' --copies '.$this->copies:'')                              // number of copies
-                            .' --orientation '.$this->orient                                                                // orientation
-                            .' --page-size '.$this->size                                                                    // page size
+                            .' -O '.$this->orient                                                                // orientation
+                            .' -s '.$this->size                                                                    // page size
                             .' -T 15mm -B 10mm -R 4mm -L 4mm '
-                            .' --debug-javascript '
-                            //.($this->footer ?  ' --footer-spacing 3 --footer-html '.$this->footer : '')
                             .' --footer-center [page] '
                             .($this->header ?  ' --header-spacing 3 --header-html '.$this->header : '')
                             .($this->toc?' --toc':'')                                                                               // table of contents
-                            .($this->grayscale?' --grayscale':'')                                                   // grayscale
+                            .($this->grayscale?' -g':'')                                                   // grayscale
                             .(($this->title!='')?' --title "'.$this->title.'"':'')                  // title
-                            .' "'.$this->tmp.'" -'                                                                                                // URL and optional to write to STDOUT
+                            .' "'.$this->tmp.'" -\''                                                  // URL and optional to write to STDOUT
+;
+exit;
+*/
+                    $oldcwd = getcwd();
+                    chdir($GLOBALS['WKPDF_BASE_PATH']);
+
+/*
+                    $this->pdf=self::_pipeExec(
+                            '"'.$this->cmd.'"'
+                            .(($this->copies>1)?' --copies '.$this->copies:'')                              // number of copies
+                            .' -O '.$this->orient                                                                // orientation
+                            .' -s '.$this->size                                                                    // page size
+                            .' -T 15mm -B 10mm -R 4mm -L 4mm '
+                            .' --footer-center [page] '
+                            .($this->header ?  ' --header-spacing 3 --header-html '.$this->header : '')
+                            .($this->toc?' --toc':'')                                                                               // table of contents
+                            .($this->grayscale?' -g':'')                                                   // grayscale
+                            .(($this->title!='')?' --title "'.$this->title.'"':'')                  // title
+                            .' "'.$this->tmp.'" -'                                                  // URL and optional to write to STDOUT
                         );
+*/
+
+
+                    $cmdstring =   '"'.str_replace('/', '\\', $this->cmd).'"'
+                            .' -O '.$this->orient                                                                // orientation
+                            .' -s '.$this->size                                                                  // page size
+                            .' "'.str_replace('/', '\\', $this->tmp).'" -';                                      // URL and optional to write to STDOUT;
+
+                    // echo $cmdstring; exit;
+                    $this->pdf=self::_pipeExec($cmdstring);
 
 
                     /**
@@ -248,11 +277,13 @@
 
                     if($this->pdf['stdout']=='') {
                         unlink($this->tmp);
+                        chdir($oldcwd);
                         throw new Exception('WKPDF didn\'t return any data. <pre>'.$this->pdf['stderr'].'</pre>');
                     }
 
                     if ((int)$this->pdf['return']  > 2) {
                         unlink($this->tmp);
+                        chdir($oldcwd);
                         throw new Exception('WKPDF shell error, return code '.(int)$this->pdf['return'].'.');
                     }
 
@@ -269,6 +300,7 @@
                     if($this->footer) {
                         unlink($this->footer);
                     }
+                    chdir($oldcwd);
             }
             /**
              * Return PDF with various options.

@@ -1,4 +1,4 @@
-<?
+<?php
 
 // Include the core dependencies for each of the question types.
 include_once($CFG->dirroot . '/question/engine/renderer.php');
