@@ -2,7 +2,8 @@
 
         // Automated configuration. Modify these if they fail. (they shouldn't ;) )
         $GLOBALS['WKPDF_BASE_PATH']=str_replace(str_replace('\\','/',getcwd().'/'),'',dirname(str_replace('\\','/',__FILE__))).'/';
-        $GLOBALS['WKPDF_BASE_SITE']='http://'.$_SERVER['SERVER_NAME'].'/';
+        // $GLOBALS['WKPDF_BASE_PATH'] = dirname(__FILE__).'/';
+
 
         /**
          * @author Christian Sciberras
@@ -57,7 +58,7 @@
              */
             private static function _pipeExec($cmd,$input=''){
                     // array('bypass_shell' => 1)
-                    $proc=proc_open($cmd,array(0=>array('pipe','r'),1=>array('pipe','w'),2=>array('pipe','w')),$pipes, null);
+                    $proc=proc_open("\"$cmd\"",array(0=>array('pipe','r'),1=>array('pipe','w'),2=>array('pipe','w')),$pipes, null, array('bypass_shell' => 1));
                     fwrite($pipes[0],$input);
                     fclose($pipes[0]);
                     $stdout=stream_get_contents($pipes[1]);
@@ -131,8 +132,7 @@
             public function __construct(){
 
                 //TODO: abstract this to a configuration file
-                $this->cmd=$GLOBALS['WKPDF_BASE_PATH'] . 'wkhtml64.exe';
-
+                $this->cmd='C://Program Files/wkhtmltopdf/bin/wkhtmltopdf.exe';
                 // If we couldn't find the wkhtmltopdf binary, raise an exception.
                 if(!file_exists($this->cmd)) {
                     throw new Exception('WKPDF static executable "'.htmlspecialchars($this->cmd,ENT_QUOTES).'" was not found.');
@@ -260,29 +260,74 @@ exit;
 */
 
 
-                    $cmdstring =   '"'.str_replace('/', '\\', $this->cmd).'"'
+                    $cmdstring =   '"'.$this->cmd.'"'
+                            .' "'.$this->tmp.'" "'.$this->tmp.'.pdf"';                                      // URL and optional to write to STDOUT;
+ 
+
+                    $cmdstring =
+                            '"'.$this->cmd.'"'
+                            .(($this->copies>1)?' --copies '.$this->copies:'')                              // number of copies
                             .' -O '.$this->orient                                                                // orientation
-                            .' -s '.$this->size                                                                  // page size
-                            .' "'.str_replace('/', '\\', $this->tmp).'" -';                                      // URL and optional to write to STDOUT;
+                            .' -s '.$this->size                                                                    // page size
+                            .' -T 15mm -B 10mm -R 4mm -L 4mm '
+                            .' --footer-center [page] '
+                            .($this->header ?  ' --header-spacing 3 --header-html "'.$this->header . '"' : '')
+                            .($this->toc?' --toc':'')                                                                               // table of contents
+                            .($this->grayscale?' -g':'')                                                   // grayscale
+                            .(($this->title!='')?' --title "'.$this->title.'"':'')                  // title
+                            .' "'.$this->tmp.'" "'.$this->tmp.'.pdf"'                               // temporary output file because stdout doesn't work on Windows
+                        ;
 
-                    // echo $cmdstring; exit;
+
+                    $cmdstring =
+                            '"'.$this->cmd.'"'
+                            .' --load-media-error-handling ignore'
+                            .' --load-error-handling ignore'
+                            .(($this->copies>1)?' --copies '.$this->copies:'')                              // number of copies
+                            .' -O '.$this->orient                                                                // orientation
+                            .' -s '.$this->size                                                                    // page size
+                            .' -T 15mm -B 10mm -R 4mm -L 4mm '
+                            .' --footer-center [page] '
+                            .($this->toc?' --toc':'')                                                                               // table of contents
+                            .($this->grayscale?' -g':'')                                                   // grayscale
+                            .(($this->title!='')?' --title "'.$this->title.'"':'')                  // title
+                            .' "'.$this->tmp.'" "'.$this->tmp.'.pdf"'                               // temporary output file because stdout doesn't work on Windows
+                        ;
+
+                    $cmdstring =
+                            '"'.$this->cmd.'"'
+                            .' --load-media-error-handling ignore'
+                            .' --load-error-handling ignore'
+                            .(($this->copies>1)?' --copies '.$this->copies:'')                              // number of copies
+                            .' -O '.$this->orient                                                                // orientation
+                            .' -s '.$this->size                                                                    // page size
+                            .' -T 15mm -B 10mm -R 4mm -L 4mm '
+                            .' --footer-center [page] '
+                            .($this->toc?' --toc':'')                                                                               // table of contents
+                            .($this->grayscale?' -g':'')                                                   // grayscale
+                            .(($this->title!='')?' --title "'.$this->title.'"':'')                  // title
+                            .' "E:/Data/Web/moodle/theme/pdf/lib/tmp/pdf-1520702075_54b96817c898c_nogoog.html" "'.$this->tmp.'.pdf"'                               // temporary output file because stdout doesn't work on Windows
+                        ;
+
+
                     $this->pdf=self::_pipeExec($cmdstring);
+                    $this->pdf['stdout']= file_get_contents($this->tmp.'.pdf');
 
-
-                    /**
                     if(strpos(strtolower($this->pdf['stderr']),'error')!==false) {
-                        throw new Exception('WKPDF system error: <pre>'.$this->pdf['stderr'].'</pre>'); 
+                        throw new Exception('WKPDF system error: <pre>'.$this->pdf['stderr']. $cmdstring . '</pre>'); 
                     }
-                    **/
+
+                    @unlink($this->tmp);
+                    if (file_exists($this->tmp.'.pdf')) {
+                        @unlink($this->tmp.'.pdf');
+                    }
 
                     if($this->pdf['stdout']=='') {
-                        unlink($this->tmp);
                         chdir($oldcwd);
                         throw new Exception('WKPDF didn\'t return any data. <pre>'.$this->pdf['stderr'].'</pre>');
                     }
 
                     if ((int)$this->pdf['return']  > 2) {
-                        unlink($this->tmp);
                         chdir($oldcwd);
                         throw new Exception('WKPDF shell error, return code '.(int)$this->pdf['return'].'.');
                     }
@@ -290,8 +335,6 @@ exit;
                     $this->status=$this->pdf['stderr'];
                     $this->pdf=$this->pdf['stdout'];
 
-
-                    unlink($this->tmp);
 
                     if($this->header) {
                         unlink($this->header);
@@ -301,6 +344,8 @@ exit;
                         unlink($this->footer);
                     }
                     chdir($oldcwd);
+
+                // echo $this->pdf; exit;
             }
             /**
              * Return PDF with various options.

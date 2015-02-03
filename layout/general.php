@@ -2,7 +2,8 @@
 <html>
 <head>
     <title><?php echo $PAGE->title ?></title>
-    <link href='https://fonts.googleapis.com/css?family=Oswald:400,300|Droid+Sans:400,700' rel='stylesheet' type='text/css'>
+    <!-- wkhtmltopdf throws an error trying to contact this URL -->
+    <!-- <link href='https://fonts.googleapis.com/css?family=Oswald:400,300|Droid+Sans:400,700' rel='stylesheet' type='text/css'> -->
     <?php
         echo html_writer::empty_tag('link', array(
             'href' => $CFG->wwwroot.'/theme/pdf/style/core.css',
