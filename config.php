@@ -39,7 +39,7 @@ $THEME->name = 'pdf';
 
 
 $THEME->parents = array(
-    'standard',
+    'clean',
     'base',
 );
 
