@@ -3,3 +3,13 @@ p, td, li
 {
     font-size: 11pt;
 }
+
+.page {
+    -webkit-column-break-inside: avoid;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    page-break-before: always;
+    webkit-region-break-inside: avoid;
+    -webkit-region-break-before: always;
+}
+

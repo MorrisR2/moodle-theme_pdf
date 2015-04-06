@@ -1,8 +1,6 @@
 <?php
 
-require_once($CFG->dirroot . '/theme/pdf/html2pdf/html2pdf.class.php');
-include_once($CFG->dirroot . '/lib/htmlpurifier/HTMLPurifier.safe-includes.php');
-
+require_once($CFG->dirroot . '/theme/pdf/lib/webkit_pdf.class.php');
 
 /**
  * An extension of the core renderer, which uses the HTML2PDF library to produce PDFs instead of HTML.
@@ -46,13 +44,9 @@ class core_pdf_renderer extends core_renderer
      */
     protected static function create_new_pdf_writer($orientation=self::ORIENTATION_PORTRAIT, $paper_size=self::PAPER_LETTER, $language=self::LANGUAGE_ENGLISH)
     {
-        //create a new HTML2PDF object
-        $pdf =  new HTML2PDF($orientation, $paper_size, $language, false, 'ISO-8859-1'); //true, 'UTF-8');
-        //$pdf =  new HTML2PDF($orientation, $paper_size, $language, true, 'UTF-8');
-
-        //set the font
-        $pdf->setDefaultFont('Times');
-
+        $pdf = new webkit_pdf();
+        $pdf->set_orientation($orientation);
+        $pdf->set_page_size($paper_size);
         return $pdf;
     }
 
@@ -321,13 +315,17 @@ class core_pdf_renderer extends core_renderer
             $html = self::generate_pdf_header() . $html;
 
         //pass the page's HTML to our PDF writer
-        $pdf->writeHTML(self::pdf_preprocess($html));
+        $pdf->set_html(self::pdf_preprocess($html));
+
+        // Run the internal rendering process.
+        $pdf->render();
 
         //retrieve the raw PDF data
         if($return_output)
-            return $pdf->Output('', 'S');
+            return $pdf->output('S', $name);
         else
-            $pdf->Output($name, false);
+            $pdf->output('D', $name);
+
     }
 
      /**
