@@ -13,3 +13,10 @@ p, td, li
     -webkit-region-break-before: always;
 }
 
+.qubaid {
+    width: 16em;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
