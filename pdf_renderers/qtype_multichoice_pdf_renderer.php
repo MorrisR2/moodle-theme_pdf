@@ -164,6 +164,7 @@ abstract class qtype_multichoice_pdf_renderer_base extends qtype_multichoice_ren
      */
     public static function detect_cols_from_answers($possible_answers)
     {
+        return 1;
         //get the length of the text for the longest HTML line
         $len = self::longest_line_length($possible_answers);
 
