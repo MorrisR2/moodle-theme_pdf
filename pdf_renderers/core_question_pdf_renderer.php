@@ -34,7 +34,7 @@ class core_question_pdf_renderer extends core_question_renderer
         //add the quesiton number (TODO: style?)
         //$output .= '<strong>' . $number .'.</strong>&nbsp; &nbsp;';
 
-        $output .= html_writer::start_tag('table', array('style' => 'width: 100%; padding-bottom: 4px;'));
+        $output .= html_writer::start_tag('table', array('style' => 'width: 100%; padding-bottom: 4px;', 'class' => 'question'));
         $output .= html_writer::start_tag('tr', array());
         $output .= html_writer::tag('td', $number.'.', array('valign' => 'top', 'width' => '10%', 'style' => 'padding-right: 10px;'));
         $output .= html_writer::start_tag('td', array('width' => '90%'));

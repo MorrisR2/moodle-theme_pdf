@@ -20,3 +20,12 @@ p, td, li
     margin-right: auto;
 }
 
+.noprint { display: none; }
+
+table.question {
+    -webkit-column-break-inside: avoid;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    webkit-region-break-inside: avoid;
+}
+
