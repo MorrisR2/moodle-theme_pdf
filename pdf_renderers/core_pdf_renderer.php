@@ -101,6 +101,7 @@ class core_pdf_renderer extends core_renderer
 
     public static function pdf_preprocess($html, $rewrite_links=true)
     {
+        global $CFG;
 
         //ensure the HTML code is well-formed, as part of it comes from the instructors
         if(!self::$do_not_purify)
@@ -116,7 +117,7 @@ class core_pdf_renderer extends core_renderer
         if($rewrite_links)
             $html = self::rewrite_links($html);
 
-
+        $html = str_replace('src="/', 'src="file:///' . $CFG->dirroot . '/', $html);
         //TODO: replace with preg match or better HTML parser
         $html = str_replace('\'courier new\', courier, monospace;', 'courier;', $html);
 
