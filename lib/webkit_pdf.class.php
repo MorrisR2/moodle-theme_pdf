@@ -9,7 +9,6 @@
             $scheme = 'http://';
         }
         $GLOBALS['WKPDF_BASE_SITE']=$scheme.$_SERVER['SERVER_NAME'].'/';
-        $GLOBALS['WKPDF_TMP_URL'] = $GLOBALS['WKPDF_BASE_SITE'] . 'theme/pdf/lib/tmp/';
 
         /**
          * @author Christian Sciberras
@@ -142,7 +141,6 @@
                 // $this->cmd= $CFG->dirroot. '/theme/pdf/wkhtmltopdf.exe';
                 // If we couldn't find the wkhtmltopdf binary, raise an exception.
                 if(!file_exists($this->cmd)) {
-                    echo "\nfile: ". __FILE__ . ' line: ' . __LINE__ . "<br />\n"; exit;
                     throw new Exception('WKPDF static executable "'.htmlspecialchars($this->cmd,ENT_QUOTES).'" was not found.');
                 }
 
@@ -234,7 +232,9 @@
 
                     $oldcwd = getcwd();
                     chdir($GLOBALS['WKPDF_BASE_PATH']);
-                    $tmpurl = $GLOBALS['WKPDF_TMP_URL'] . basename($this->tmp);
+
+                include_once('simple_html_dom/download_page.php');
+                $this->tmp = download_complete_page('file:///' . realpath($this->tmp), $GLOBALS['WKPDF_BASE_PATH'] . '/tmp/');
 
                     $cmdstring =   '"'.$this->cmd.'"'
                             .(($this->copies>1)?' --copies '.$this->copies:'')                      // number of copies
@@ -248,13 +248,14 @@
                             .(($this->title!='')?' --title "'.$this->title.'"':'')                 // title
                             .' --disable-smart-shrinking --images '
                             .' "'.$this->tmp.'" "'.$this->tmp.'.pdf"';                             // Windows doesn't seem to work well with STDOUT;
- 
+
 
                     $this->pdf=self::_pipeExec($cmdstring);
                     $this->pdf['stdout']= file_get_contents($this->tmp.'.pdf');
 
                     if(strpos(strtolower($this->pdf['stderr']),'error')!==false) {
-                        throw new Exception('WKPDF system error: <pre>'.$this->pdf['stderr'].'</pre>'); 
+                        echo "error: " .$this->pdf['stderr'];
+                        // throw new Exception('WKPDF system error: <pre>'.$this->pdf['stderr'].'</pre>'); 
                     }
 
                     if($this->pdf['stdout']=='') {
