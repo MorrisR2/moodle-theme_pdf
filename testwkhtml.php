@@ -42,7 +42,7 @@ class webkit_pdf {
 
                     $this->pdf=self::_pipeExec($cmdstring);
                     if(strpos(strtolower($this->pdf['stderr']),'error')!==false) {
-                        echo $this->pdf['stderr'];
+                    //    echo $this->pdf['stderr'];
                     }
                     $this->pdf['stdout']= file_get_contents($this->tmp.'.pdf');
                     echo $this->pdf['stdout'];
@@ -78,9 +78,9 @@ class webkit_pdf {
                     echo "\nfile: ". __FILE__ . ' line: ' . __LINE__ . "<br />\n";
                     throw new Exception('WKPDF static executable "'.htmlspecialchars($this->cmd,ENT_QUOTES).'" was not found.');
                 }
-                include_once('simple_html_dom/download_page.php');
-                // $this->tmp = 'lib/tmp//test.html';
-                $this->tmp = download_complete_page('file:///' . realpath('lib/tmp/test.html'), 'lib/tmp');
+                include_once('lib/simple_html_dom/download_page.php');
+                $this->tmp = 'lib/tmp/test2.html';
+                // $this->tmp = download_complete_page('file:///' . realpath('lib/tmp/test.html'), 'lib/tmp');
             }
 
 }
