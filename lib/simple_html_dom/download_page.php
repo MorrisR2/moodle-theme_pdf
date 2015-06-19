@@ -5,36 +5,29 @@ include_once('http_build_url.php');
 
 function download_complete_page($pageurl, $tmppath = 'tmp/' ) {
     if (strpos($pageurl, 'http') === 0) {
-        $htmlsrc = file_get_contents($htmlsrc);
+        $htmlsrc = simple_curl_string($htmlsrc);
     } else {
-        $htmlsrc = simple_curl_string($pageurl);
+        $htmlsrc = file_get_contents($pageurl);
     }
-    /*
-    echo __FILE__ . ' ' . __LINE__ . $htmlsrc;
-    echo __FILE__ . ' ' . __LINE__;
-    */
 
     $html = str_get_html($htmlsrc);
 
     $pageurlparts = parse_url($pageurl);
 
-    $tmppath = $tmppath . '/' . md5($url);
+    $tmppath = $tmppath . '/' . md5($pageurl);
     if(!is_dir($tmppath)) {
         mkdir($tmppath);
     }
 
     foreach($html->find('img') as $element) {
-        echo cleanurl($pageurlparts, $element->src) . "\n";
-        // $element->src = savereq($tmppath, cleanurl($pageurlparts, $element->src));
+        $element->src = savereq($tmppath, cleanurl($pageurlparts, $element->src));
     }
 
     foreach($html->find('link[rel=stylesheet]') as $element) {
         $cssurlparts = parse_url($element->href);
         
-        // echo "\n______ " . $element->href . " __________\n";
         $element->href = savereq($tmppath, cleanurl($pageurlparts, $element->href));
         $cleancss = rewritecssurls($tmppath, file_get_contents($element->href), $cssurlparts);
-        // echo $cleancss;
         file_put_contents($element->href, $cleancss);
     }
     // Scripts must be removed for security due to issues with same-origin and trust zones
@@ -44,10 +37,9 @@ function download_complete_page($pageurl, $tmppath = 'tmp/' ) {
 
     foreach($html->find('style') as $element) {
         $element->innertext = rewritecssurls($tmppath, $element->innertext, $pageurlparts);
-        // echo "\n____inline____\n" . $element->innertext;
     }
 
-    $htmlpath = "$tmppath/" . md5($url) . '.html';
+    $htmlpath = "$tmppath/" . md5($pageurl) . '.html';
     $html->save($htmlpath);
     return $htmlpath;
 }
@@ -57,11 +49,10 @@ function savereq($basepath, $url) {
         return '';
     }
    
-    if (strpos($url, 'file:') === 0) {
-        return $url;
-    }
-
     $filename = glob_single($basepath, md5($url) . '.*');
+    if (time() - filemtime($filename) > 90) {
+        $filename = '';
+    }
 
     if (empty($filename)) {
         $stub = $basepath . '/' . md5($url);
@@ -75,7 +66,7 @@ function savereq($basepath, $url) {
             rename($stub, $filename);
         }
     }
-    return 'file://' . realpath($filename);
+    return 'file:///' . str_replace('\\', '/', realpath($filename));
 }
 
 
@@ -87,7 +78,6 @@ function simple_curl_content_type($url, $filename) {
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
     curl_setopt($ch, CURLOPT_HEADER, false);
     curl_setopt($ch, CURLOPT_BINARYTRANSFER,1);
-    // curl_setopt($ch, CURLOPT_FILE, $fp);
     curl_setopt($ch, CURLOPT_URL, $url);
     $content = curl_exec($ch);
     fwrite($fp, $content);
@@ -154,23 +144,14 @@ function cleanurl($pageurlparts, $url) {
         return $url;
     }
 
+
     if (strpos($url, '//') === 0) {
-        // echo "$url is fully qualified except scheme, returning with scheme<br />\n";
         return $pageurlparts['scheme'] . ":$url";
     } elseif (strpos($url, 'http') === 0) {
-        // echo "$url is fully qualified, returning<br />\n";
         return $url;
     } else {
-        // echo "$url is not fully qualified, joining<br />\n";
         return http_build_url($url, $pageurlparts, HTTP_URL_JOIN_PATH);
     }
-    /*
-    } elseif (strpos('/') == 1) {
-        $url = $pageurlparts['scheme'] . $pageurlparts['host'] . $url;
-   } else {
-       $url = $pageurlparts['scheme'] . $pageurlparts['host'] . $pageurlparts['path'] . $url;
-   }
-    */
 }
 
 
