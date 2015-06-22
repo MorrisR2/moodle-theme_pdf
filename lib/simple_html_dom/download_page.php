@@ -48,7 +48,11 @@ function savereq($basepath, $url) {
     if (empty($url)) {
         return '';
     }
-   
+ 
+    if (strpos($url, 'file:') === 0) {
+          return $url;
+    }
+
     $filename = glob_single($basepath, md5($url) . '.*');
     if (time() - filemtime($filename) > 90) {
         $filename = '';
