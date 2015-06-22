@@ -134,8 +134,8 @@ class core_pdf_renderer extends core_renderer
         //escape the wwwroot location, so it can be used in a regular expression
         $root_url = preg_quote($CFG->wwwroot);
 
-        //attempt to replace each pluginfile link with a 
-        $after = preg_replace_callback('#img(.*?) src\="'.$root_url.'/pluginfile\.php/([0-9]+)/([a-z]+)/([a-z]+)/([0-9]+)/([0-9]+)/([0-9]+)/([^"]+)#', array('core_pdf_renderer', 'rewrite_link_callback'), $html, -1);
+        //attempt to replace each pluginfile link with a
+        $after = preg_replace_callback('#img(.*?) src\="'.$root_url.'/pluginfile\.php/([0-9]+)/([a-z_]+)/([a-z]+)/?([0-9]*)/?([0-9]*)/?([0-9]*)/([^"]+)#', array('core_pdf_renderer', 'rewrite_link_callback'), $html, -1);
 
 
         //if no error occurred, return the HTML string, with links replaced
@@ -153,7 +153,7 @@ class core_pdf_renderer extends core_renderer
 
         //matches array
         //0: original URI
-	//1: any additional HTML fields between IMG and SRC, i.e. <img ____ src="
+        //1: any additional HTML fields between IMG and SRC, i.e. <img ____ src="
         //2: calling coursemodule ID
         //3: component
         //4: filearea
@@ -163,7 +163,7 @@ class core_pdf_renderer extends core_renderer
         //8: filename
 
         //get a reference to the file in quesiton, if it exists
-        $file = $DB->get_record('files', array('component' => $matches[3], 'filearea' => $matches[4], /* 'userid' => $matches[6], */ 'itemid' => $matches[7], 'filename' => $matches[8])); 
+        $file = $DB->get_record('files', array('component' => $matches[3], 'filearea' => $matches[4], 'contextid' => $matches[2], 'itemid' => $matches[7], 'filename' => urldecode(html_entity_decode($matches[8]))));
 
         //if we couldn't find the given file, then return its untranslated filename
         if(!$file)
@@ -174,7 +174,7 @@ class core_pdf_renderer extends core_renderer
         $sub_dir = substr($file->contenthash, 2, 2);
 
         //and return the file's location on disk
-        return 'img '.$matches[1].' src="'.$CFG->dataroot.'/filedir/'.$main_dir.'/'.$sub_dir.'/'.$file->contenthash;
+        return 'img '.$matches[1].' src="file:///'.$CFG->dataroot.'/filedir/'.$main_dir.'/'.$sub_dir.'/'.$file->contenthash;
     }
 
 
