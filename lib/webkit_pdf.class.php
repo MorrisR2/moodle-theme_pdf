@@ -234,7 +234,7 @@
                     chdir($GLOBALS['WKPDF_BASE_PATH']);
 
                 include_once('simple_html_dom/download_page.php');
-                $this->tmp = download_complete_page('file:///' . realpath($this->tmp), $GLOBALS['WKPDF_BASE_PATH'] . '/tmp/');
+                $this->tmp = download_complete_page(realpath($this->tmp), $GLOBALS['WKPDF_BASE_PATH'] . '/tmp/');
 
                     $cmdstring =   '"'.$this->cmd.'"'
                             .(($this->copies>1)?' --copies '.$this->copies:'')                      // number of copies
