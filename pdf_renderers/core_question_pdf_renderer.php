@@ -126,11 +126,8 @@ class core_question_pdf_renderer extends core_question_renderer
             qtype_renderer $qtoutput, question_display_options $options, $number) {
         $output = '';
         $output .= $this->number($number);
-        $output .= "\n" . __FILE__ . ' ' . __LINE__ . "<br />\n";
         $output .= $this->status($qa, $behaviouroutput, $options);
-        $output .= "\n" . __FILE__ . ' ' . __LINE__ . "<br />\n";
         $output .= $this->mark_summary($qa, $behaviouroutput, $options);
-        $output .= "\n" . __FILE__ . ' ' . __LINE__ . "<br />\n";
         $output .= $this->question_flag($qa, $options->flags);
         $output .= $this->edit_question_link($qa, $options);
         return $output;
